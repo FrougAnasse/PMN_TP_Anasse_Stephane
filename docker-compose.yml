@@ -1,0 +1,46 @@
+# the first line must be the version of composer we want to use
+version: '3'
+
+# we start by adding the service we need, in our case mysql, phpmyadmin and wordpress
+services:
+  # we start by make the service mysql
+  mysql:
+    # first we take the latest version of mysql
+    image: mysql:latest
+    # we add the option who will make restart mysql if it shutdown unexpectelly
+    restart: always
+    # then we need to open the ports of the container to our computer 
+    ports: 
+      # we chose to open mysql in the port 3306  to the ort 3306 of our computer
+      - 3306:3306
+    # now we need to set the environment mysql need to work fine
+    environment:
+      #mysql in the name of the database 
+      MYSQL_DATABASE: wordpress
+      #mysql in the name of the user
+      MYSQL_USER: wordpress
+      #mysql in the name of the password of the user
+      MYSQL_PASSWORD: wordpress
+      #mysql in the name of the root password
+      MYSQL_ROOT_PASSWORD: wordpress
+    #mysql need to communicate with wordpress and phpmyadmin so we add 2 networks
+    networks: 
+      # the frontend neworks will communicate with wordpress
+      - frontend
+      # the second networks will communicate with phpmyadmin
+      - backend
+    # we need to stock the modification we did so you need a volumes where we can link the container modification to our dcomputer
+    volumes:
+      # the link will be ./db_data on our computer will be linked by /var/lib/mysql
+      - ./db_data:/var/lib/mysql
+
+#we need to define the networks we use
+networks: 
+  #let's start with frontend
+  frontend:
+    #the driver will be bridge to make sure that mysql and phpmyadmin can talk to eachother
+    driver: bridge
+  #now we work on the networks backend
+  backend:
+     #the driver will be bridge to make sure that mysql and phpmyadmin can talk to eachother
+    driver: bridge
