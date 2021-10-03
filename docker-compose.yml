@@ -34,13 +34,24 @@ services:
       # local_folder:online_folder
       - ./db_data:/var/lib/mysql
  
+  #let's start configure service phpmyadmin
   phpmyadmin:
+    # we start by make the service phpmyadmin
     image: phpmyadmin
+    # we add the option who will make restart mysql if it shutdown unexpectelly
     restart: always
-    ports:
-      - 8080:80
+    # now we need to set the environment mysql need to work fine
     environment:
-      - PMA_ARBITRARY=1
+      # phpmyadmin needs the host in your case the mysql with his ports
+      PMA_HOSTS: mysql:3306
+     # then we need to open the ports of the container to our computer 
+    ports: 
+      # we chose to open phpmyadmin in the port 8080  to the port 8080 of our computer
+      - 8080:80
+    # php need to communicate with mysql so we had the networks backend
+    networks: 
+      #we had the networks backend
+      - backend
 
   # Front-end service
   wordpress:
