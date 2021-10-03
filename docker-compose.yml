@@ -1,46 +1,84 @@
-# the first line must be the version of composer we want to use
+# Docker-compose Version
 version: '3'
 
-# we start by adding the service we need, in our case mysql, phpmyadmin and wordpress
+# Definition of the services we need
 services:
-  # we start by make the service mysql
+ 
+  # Data base service
   mysql:
-    # first we take the latest version of mysql
+    # Docker image of MySQL needed
     image: mysql:latest
-    # we add the option who will make restart mysql if it shutdown unexpectelly
+    # Automatically relaunch the service in case of crash
     restart: always
-    # then we need to open the ports of the container to our computer 
+    # Opening ports from the container to the PC
     ports: 
-      # we chose to open mysql in the port 3306  to the ort 3306 of our computer
       - 3306:3306
-    # now we need to set the environment mysql need to work fine
+    # Creation of the parameters required to connect to the database
     environment:
-      #mysql in the name of the database 
+      # Data base name
       MYSQL_DATABASE: wordpress
-      #mysql in the name of the user
+      # User name allowed
       MYSQL_USER: wordpress
-      #mysql in the name of the password of the user
+      # User Password
       MYSQL_PASSWORD: wordpress
-      #mysql in the name of the root password
+      # Root password
       MYSQL_ROOT_PASSWORD: wordpress
-    #mysql need to communicate with wordpress and phpmyadmin so we add 2 networks
+    # Links between services
     networks: 
-      # the frontend neworks will communicate with wordpress
+      # Link to wordpress
       - frontend
-      # the second networks will communicate with phpmyadmin
+      # Link to phpMyAdmin
       - backend
-    # we need to stock the modification we did so you need a volumes where we can link the container modification to our dcomputer
+    # Specify where to locally stock the data base
     volumes:
-      # the link will be ./db_data on our computer will be linked by /var/lib/mysql
+      # local_folder:online_folder
       - ./db_data:/var/lib/mysql
+ 
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
 
-#we need to define the networks we use
+  # Front-end service
+  wordpress:
+    # Other service(s) needed to work
+    depends_on:
+      - mysql
+    # Docker image of Wordpress needed
+    image: wordpress:latest
+    # Specify where to locally stock wordpress files
+    volumes:
+      # local_folder:online_folder
+      - ./wordpress:/var/www/html
+    # Opening ports from the container to the PC
+    ports:
+      - "80:80"
+    # Automatically relaunch the service in case of crash
+    restart: always
+    # Definition of the parameters used to connect to the database
+    environment:
+      # Data base server
+      WORDPRESS_DB_HOST: mysql:3306
+      # User name 
+      WORDPRESS_DB_USER: wordpress
+      # User password 
+      WORDPRESS_DB_PASSWORD: wordpress
+      # Data base name
+      WORDPRESS_DB_NAME: wordpress
+    # Links between sevices
+    networks: 
+      # Link to MySQL
+      - frontend
+
+# Define how to link services
 networks: 
-  #let's start with frontend
   frontend:
-    #the driver will be bridge to make sure that mysql and phpmyadmin can talk to eachother
+    # Allows Wordpress to communicate with MySQL
     driver: bridge
-  #now we work on the networks backend
   backend:
-     #the driver will be bridge to make sure that mysql and phpmyadmin can talk to eachother
+    # Allows phpMyAdmin to communicate with MySQL
     driver: bridge
+
